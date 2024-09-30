@@ -1,0 +1,16 @@
+# https://learn.microsoft.com/en-us/azure/devops/pipelines/process/stages?view=azure-devops&tabs=yaml#specify-stages
+
+variables:
+- name: adoagent
+  value: 'default'
+
+trigger:
+  paths:
+    include:
+    - 'pipelines/lab-4/*'
+
+pool: $(adoagent)
+
+steps:
+- pwsh: echo "Hello world"
+- pwsh: echo $(adoagent)

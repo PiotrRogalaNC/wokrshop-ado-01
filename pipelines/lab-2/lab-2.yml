@@ -1,0 +1,17 @@
+# https://learn.microsoft.com/en-us/azure/devops/pipelines/process/stages?view=azure-devops&tabs=yaml#specify-stages
+
+trigger:
+  paths:
+    include:
+    - 'pipelines/lab-2/*'
+
+pool: default
+
+jobs:
+- job: A
+  steps:
+  - pwsh: echo "A"
+
+- job: B
+  steps:
+  - pwsh: echo "B"

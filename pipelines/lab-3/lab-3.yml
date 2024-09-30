@@ -1,0 +1,19 @@
+# https://learn.microsoft.com/en-us/azure/devops/pipelines/process/stages?view=azure-devops&tabs=yaml#specify-stages
+
+trigger:
+  paths:
+    include:
+    - 'pipelines/lab-3/*'
+
+pool: default
+
+stages:
+- stage: A
+  jobs:
+  - job: A1
+  - job: A2
+
+- stage: B
+  jobs:
+  - job: B1
+  - job: B2

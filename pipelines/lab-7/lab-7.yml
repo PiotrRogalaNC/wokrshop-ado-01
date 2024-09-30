@@ -1,0 +1,67 @@
+# https://learn.microsoft.com/en-us/azure/devops/pipelines/process/phases?view=azure-devops&tabs=yaml#define-a-single-job
+# https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/azure-resource-manager-template-deployment-v3?view=azure-pipelines
+# https://learn.microsoft.com/en-us/azure/devops/pipelines/yaml-schema/steps-checkout?view=azure-pipelines
+
+variables:
+- name: adoagent
+  value: 'default'
+- name: serviceConnection
+  value: 'AZG-AzurePolandGarage-Sandbox'
+- name: subscriptionID
+  value: 'ad07f148-ef06-40bd-91e4-46f95c881c16'
+
+trigger:
+  paths:
+    include:
+    - 'pipelines/lab-7/*'
+
+
+stages:
+- stage: nonprod
+  jobs:
+  - deployment: 'deployment'
+    pool: $(adoagent)
+    environment: 'nonprod'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+
+          - task: AzureResourceManagerTemplateDeployment@3
+            displayName: 'bicep deployment'
+            inputs:
+              deploymentScope: 'Resource Group'
+              azureResourceManagerConnection: $(serviceConnection)
+              subscriptionId: $(subscriptionID)
+              location: 'northeurope'
+              templateLocation: 'Linked artifact'
+              resourceGroupName: 'rg-workshopado-pr-nonprod'
+              csmFile: '$(System.DefaultWorkingDirectory)/pipelines/lab-7/keyVault.bicep'
+              csmParametersFile: '$(System.DefaultWorkingDirectory)/pipelines/lab-7/keyVault-nonprod.bicepparam'
+              deploymentMode: 'Incremental'
+
+- stage: prod
+  jobs:
+  - deployment: 'deployment'
+    pool: $(adoagent)
+    environment: 'prod'
+    condition: succeeded()
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+
+          - task: AzureResourceManagerTemplateDeployment@3
+            displayName: 'bicep deployment'
+            inputs:
+              deploymentScope: 'Resource Group'
+              azureResourceManagerConnection: $(serviceConnection)
+              subscriptionId: $(subscriptionID)
+              location: 'northeurope'
+              templateLocation: 'Linked artifact'
+              resourceGroupName: 'rg-workshopado-pr-prod'
+              csmFile: '$(System.DefaultWorkingDirectory)/pipelines/lab-7/keyVault.bicep'
+              csmParametersFile: '$(System.DefaultWorkingDirectory)/pipelines/lab-7/keyVault-prod.bicepparam'
+              deploymentMode: 'Incremental'

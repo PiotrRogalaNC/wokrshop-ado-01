@@ -1,0 +1,36 @@
+# https://learn.microsoft.com/en-us/azure/devops/pipelines/process/phases?view=azure-devops&tabs=yaml#define-a-single-job
+# https://learn.microsoft.com/en-us/azure/devops/pipelines/tasks/reference/azure-resource-manager-template-deployment-v3?view=azure-pipelines
+
+variables:
+- name: adoagent
+  value: 'default'
+- name: serviceConnection
+  value: 'AZG-AzurePolandGarage-Sandbox'
+- name: subscriptionID
+  value: 'ad07f148-ef06-40bd-91e4-46f95c881c16'
+
+trigger:
+  paths:
+    include:
+    - 'pipelines/lab-5/*'
+
+jobs:
+- deployment: 'deployment'
+  pool: $(adoagent)
+  environment: 'test'
+  strategy:
+    runOnce:
+      deploy:
+        steps:
+        - task: AzureResourceManagerTemplateDeployment@3
+          displayName: 'bicep deployment'
+          inputs:
+            deploymentScope: 'Resource Group'
+            azureResourceManagerConnection: $(serviceConnection)
+            subscriptionId: $(subscriptionID)
+            location: 'northeurope'
+            templateLocation: 'Linked artifact'
+            resourceGroupName: 'rg-workshopado-pr-nonprod'
+            csmFile: '$(System.DefaultWorkingDirectory)/pipelines/lab-5/keyVault.bicep'
+            csmParametersFile: '$(System.DefaultWorkingDirectory)/pipelines/lab-5/keyVault-nonprod.bicepparam'
+            deploymentMode: 'Incremental'
